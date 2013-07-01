@@ -1,0 +1,62 @@
+//
+//  Synaptics_dsx_i2c_driver
+/////////////////////////////////////////////////////////////
+
+DSX 1.6 May 09, 2013 achin@synaptics.com
+ - Fixed a momery leak issue in test reporting
+ - Re-init test reporting module after command reset
+ - Fixed 2nd hang in test reporting if run commandline tool and
+   device is in bootloader mode.
+ - Do detection work when a module is inserted
+ - Use DECLARE_COMPLETION to control completion life cycle
+ - Check if in crc progress after device reset or power on
+ - Support RED sysfs interrupt mode
+
+DSX 1.5 Apr 15, 2013 achin@synaptics.com
+ - Contains image option 1 support
+   -- Read firmware build id from image file header,
+       instead of read from image file name.
+ - Fixed issue of updating config if image firmware id
+   is smaller than device firmware id in go_nogo()
+ - Added device status checking after device reset
+ - Support polling mode in firmware update
+
+DSX 1.4 Apr 01, 2013 achin@synaptics.com
+ - Modified firmware update flow
+ - Support querying sensor id
+
+DSX 1.3 Mar 18, 2013 achin@synaptics.com
+ - Fixed reset after fw update fail with different PR
+ - Fixed production test always failed if ever run in 
+   suspend
+ - Modified go nogo function
+ - Replace kmalloc with kzalloc
+
+DSX 1.2 Feb 20, 2013 achin@synaptics.com
+ - Synaptics DS4 I2C driver
+   -- Update irq enable control
+   -- Report z value
+   -- Report ABS_X/ABS_Y/ABS_PRESSURE
+   -- Remove peroid module check
+   -- Support flipx/flipy/swap
+ - Commandline tool
+   -- Add version control
+   -- Add sysfs entry setting
+   
+DSX 1.1 Jan 04, 2013 achin@synaptics.com
+ - Coding style checking
+
+DSX 1.0 Dec 21, 2012 achin@synaptics.com
+ - Update platform data
+ 
+DS4 1.0 Nov 30, 2012 achin@synaptics.com
+ - Rolling back rename changes
+   
+DS4 1.0 Nov 13, 2012 achin@synaptics.com
+ - Synaptics DS4 I2C driver
+   -- Firmware update
+   
+DS4 1.0 Oct 3, 2012 achin@synaptics.com
+ - Synaptics DS4 I2C driver
+   -- F$11/F$12/F$1A/F$34/F$54
+   -- Early suspend and late resume support
