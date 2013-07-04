@@ -66,12 +66,24 @@
 #include "pm.h"
 #include "resetreason.h"
 
-#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_I2C
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE
 #include <linux/input/synaptics_dsx.h>
 #define TM_SAMPLE1	(1)	// 2D only
 #define TM_SAMPLE2	(2)	// 2D + 0D x 2
 #define TM_SAMPLE3	(3)	// 2D + 0D x 4
+#define TM_SAMPLE4	(4)	// SPI interface
+#endif
+
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_I2C
 #define SYNAPTICS_MODULE TM_SAMPLE3
+
+#elif defined CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_SPI
+#include <plat/mcspi.h>
+#include <linux/spi/spi.h>
+#define SYNAPTICS_MODULE TM_SAMPLE4
+#define SYNAPTICS_SPI_BUS 1
+#define SYNAPTICS_SPI_CS 0
+
 #endif
 
 #define PANDA_RAMCONSOLE_START	(PLAT_PHYS_OFFSET + SZ_512M)
@@ -97,8 +109,9 @@
 
 #define WILINK_UART_DEV_NAME	"/dev/ttyO1"
 
+
 /* Synaptics changes for Panda Board */
-#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_I2C
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE
 static int synaptics_gpio_setup(unsigned gpio, bool configure)
 {
 	int retval = 0;
@@ -126,7 +139,7 @@ static int synaptics_gpio_setup(unsigned gpio, bool configure)
 	return retval;
 }
 
- #if (SYNAPTICS_MODULE == TM_SAMPLE1)
+#if (SYNAPTICS_MODULE == TM_SAMPLE1)
 #define TM_SAMPLE1_ADDR 0x20
 #define TM_SAMPLE1_ATTN 39
 
@@ -201,6 +214,43 @@ static struct i2c_board_info bus4_i2c_devices[] = {
  		.platform_data = &dsx_platformdata,
      	},	
 };
+
+#elif (SYNAPTICS_MODULE == TM_SAMPLE4)
+#define TM_SAMPLE4_ATTN 39
+
+static unsigned char TM_SAMPLE4_f1a_button_codes[] = {};
+
+static struct synaptics_dsx_cap_button_map TM_SAMPLE4_cap_button_map = {
+	.nbuttons = ARRAY_SIZE(TM_SAMPLE4_f1a_button_codes),
+	.map = TM_SAMPLE4_f1a_button_codes,
+};
+
+struct synaptics_dsx_spi_delay TM_SAMPLE4_spi_delay = {
+	.byte_delay = 20,
+	.block_delay = 20,
+};
+
+static struct synaptics_dsx_platform_data dsx_platformdata = {
+	.irq_flags = IRQF_TRIGGER_FALLING,
+	.irq_gpio = TM_SAMPLE4_ATTN,
+ 	.gpio_config = synaptics_gpio_setup,
+ 	.cap_button_map = &TM_SAMPLE4_cap_button_map,
+	.spi_delay = &TM_SAMPLE4_spi_delay,
+};
+
+static struct spi_board_info rmi4_spi_devices[] = {
+	{
+		.modalias = "synaptics_dsx_spi",
+		.bus_num = SYNAPTICS_SPI_BUS,
+		.chip_select = SYNAPTICS_SPI_CS,
+		.mode = SPI_MODE_3,
+		.max_speed_hz = 2 * 1000 * 1000,
+		.platform_data = &dsx_platformdata,
+	},
+};
+
+static struct i2c_board_info bus4_i2c_devices[] = {};
+
 #endif
 
 void __init i2c_device_setup(void)
@@ -678,6 +728,17 @@ static int __init omap4_panda_i2c_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_SPI
+static void __init synaptics_register_spi1_devices(void)
+{
+	omap_mux_init_signal("mcspi1_cs0", OMAP_PIN_OUTPUT);  //sub mcspi1_cs1 fpr cd1 etc.
+	omap_mux_init_signal("mcspi1_clk", OMAP_PIN_INPUT);
+	omap_mux_init_signal("mcspi1_somi", OMAP_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("mcspi1_simo", OMAP_PIN_OUTPUT);
+	spi_register_board_info(rmi4_spi_devices, ARRAY_SIZE(rmi4_spi_devices));
+}
+#endif
+
 #ifdef CONFIG_OMAP_MUX
 static struct omap_board_mux board_mux[] __initdata = {
 	/* WLAN IRQ - GPIO 53 */
@@ -994,6 +1055,9 @@ static void __init omap4_panda_init(void)
 	ramconsole_pdata.bootinfo = omap4_get_resetreason();
 	platform_device_register(&ramconsole_device);
 	omap4_panda_i2c_init();
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_SPI
+	synaptics_register_spi1_devices();
+#endif
 	omap4_audio_conf();
 
 	if (cpu_is_omap4430())

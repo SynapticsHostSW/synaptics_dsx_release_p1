@@ -30,6 +30,19 @@ struct synaptics_dsx_cap_button_map {
 	unsigned char *map;
 };
 
+
+/*
+ * synaptics_dsx_spi_delay - spi bus timimg parameters
+ * @byte_delay: delay time betwwen two bytes of data
+ * @block_delay: delay time between spi_transfers
+*/
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_SPI
+struct synaptics_dsx_spi_delay {
+	unsigned char byte_delay;
+	unsigned char block_delay;
+};
+#endif
+
 /*
  * struct synaptics_dsx_platform_data - dsx platform data
  * @x_flip: x flip flag
@@ -54,6 +67,9 @@ struct synaptics_dsx_platform_data {
 	unsigned reset_delay_ms;
 	int (*gpio_config)(unsigned gpio, bool configure);
 	struct synaptics_dsx_cap_button_map *cap_button_map;
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_SPI
+	struct synaptics_dsx_spi_delay *spi_delay;
+#endif
 };
 
 #endif
