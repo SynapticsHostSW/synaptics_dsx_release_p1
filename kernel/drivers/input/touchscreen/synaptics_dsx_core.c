@@ -57,7 +57,6 @@
 
 #define EXP_FN_WORK_DELAY_MS 1000 /* ms */
 #define POLLING_PERIOD 1 /* ms */
-#define SYN_I2C_RETRY_TIMES 10
 #define MAX_ABS_MT_TOUCH_MAJOR 15
 
 #define F01_STD_QUERY_LEN 21
@@ -2414,5 +2413,5 @@ EXPORT_SYMBOL(synaptics_rmi4_dev_pm_ops);
 
 
 MODULE_AUTHOR("Synaptics, Inc.");
-MODULE_DESCRIPTION("Synaptics DSX I2C Touch Driver");
+MODULE_DESCRIPTION("Synaptics DSX Touch Driver");
 MODULE_LICENSE("GPL v2");
